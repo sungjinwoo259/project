@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-database.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Community Resource Finder</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        font-family: "Roboto", sans-serif;
+        color: #333;
+        background-color: #f4f7f9;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      .container {
+        width: 90%;
+        max-width: 1200px;
+        margin: auto;
+        flex: 1;
+        padding: 20px;
+      }
+      header.main-header {
+        background: linear-gradient(135deg, #2b3a42 0%, #3f5765 100%);
+        color: #fff;
+        padding: 2rem 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      header.main-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .form-section {
+        margin: 2rem 0;
+        display: none;
+      }
+      .form-section.active {
+        display: block;
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .form-container {
+        background: #ffffff;
+        padding: 2rem;
+        margin-top: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+      .location-section,
+      .post-login-section {
+        margin-top: 3rem;
+        display: none;
+      }
+      .location-section.active,
+      .post-login-section.active {
+        display: block;
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      .post-login-section h2,
+      .location-section h2 {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #2b3a42;
+      }
+      footer {
+        background: linear-gradient(135deg, #2b3a42 0%, #3f5765 100%);
+        color: #ffffff;
+        text-align: center;
+        padding: 1rem 0;
+        box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+        margin-top: auto;
+      }
+      .functionality-list {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+      }
+      .functionality-item {
+        background-color: #ffffff;
+        border: 2px solid #2b3a42;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        width: 200px;
+        cursor: pointer;
+        transition: 0.3s ease-in-out;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .functionality-item:hover {
+        background-color: #2b3a42;
+        color: #ffffff;
+        transform: translateY(-5px);
+      }
+      .resource-list {
+        display: none;
+        margin-top: 2rem;
+        background: #ffffff;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+      .resource {
+        margin-bottom: 2rem;
+        padding: 1rem;
+        border-bottom: 1px solid #ddd;
+        overflow: hidden;
+      }
+      .resource-image {
+        float: left;
+        width: 150px;
+        height: 150px;
+        margin-right: 1rem;
+        border-radius: 8px;
+        object-fit: cover;
+      }
+      .resource-details {
+        overflow: hidden;
+      }
+      .comment-section {
+        margin-top: 1rem;
+      }
+      .comment-section input {
+        width: calc(100% - 2rem);
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      .star-rating {
+        color: #ffd700;
+        font-size: 1.2rem;
+      }
+      .comments-list {
+        margin-top: 1rem;
+        padding-left: 1rem;
+        border-left: 2px solid #ddd;
+      }
+      .comments-list p {
+        margin-bottom: 0.5rem;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="p-3 text-bg-dark">
+      <div class="container">
+        <div
+          class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start"
+        >
+          <a
+            href="/"
+            class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none"
+          >
+            <svg
+              class="bi me-2"
+              width="40"
+              height="32"
+              role="img"
+              aria-label="Bootstrap"
+            >
+              <use xlink:href="#bootstrap"></use>
+            </svg>
+          </a>
+
+          <ul
+            class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0"
+          >
+            <li><a href="#" class="nav-link px-2 text-secondary">Home</a></li>
+            <li><a href="#" class="nav-link px-2 text-white">Features</a></li>
+            <li><a href="#" class="nav-link px-2 text-white">Locations</a></li>
+            <li><a href="#" class="nav-link px-2 text-white">FAQs</a></li>
+            <li><a href="#" class="nav-link px-2 text-white">About</a></li>
+          </ul>
+
+          <div class="text-end">
+            <button
+              type="button"
+              class="btn btn-outline-light me-2"
+              id="loginBtn"
+            >
+              Login
+            </button>
+            <button type="button" class="btn btn-warning" id="signupBtn">
+              Sign-up
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <header class="main-header">
+      <div class="container">
+        <h1>Community Resource Finder</h1>
+      </div>
+    </header>
+
+    <div id="signupForm" class="form-section active">
+      <div class="form-container">
+        <h2>Sign-Up</h2>
+        <form id="signup">
+          <div class="mb-3">
+            <label for="signupUsername" class="form-label">Username</label>
+            <input
+              type="text"
+              class="form-control"
+              id="signupUsername"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="signupEmail" class="form-label">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              id="signupEmail"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="signupPassword" class="form-label">Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="signupPassword"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Sign-Up</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="loginForm" class="form-section">
+      <div class="form-container">
+        <h2>Login</h2>
+        <form id="login">
+          <div class="mb-3">
+            <label for="loginEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="loginEmail" required />
+          </div>
+          <div class="mb-3">
+            <label for="loginPassword" class="form-label">Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="loginPassword"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="locationSection" class="location-section">
+      <h2>Please Provide Your Location</h2>
+      <div class="form-container">
+        <form id="locationForm">
+          <div class="mb-3">
+            <label for="locationInput" class="form-label">Location</label>
+            <input
+              type="text"
+              class="form-control"
+              id="locationInput"
+              placeholder="Enter your city or area"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-success">Submit Location</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="postLoginSection" class="post-login-section">
+      <h2>Available Services</h2>
+      <div class="functionality-list">
+        <div class="functionality-item" data-service="Food">Food</div>
+        <div class="functionality-item" data-service="Medical Shops">
+          Medical Shops
+        </div>
+        <div class="functionality-item" data-service="Petrol Bunk">
+          Petrol Bunk
+        </div>
+        <div class="functionality-item" data-service="Xerox Shop">
+          Xerox Shop
+        </div>
+        <div class="functionality-item" data-service="Travels">
+          Travels (Bus)
+        </div>
+      </div>
+
+      <div class="resource-list" id="resourceList"></div>
+    </div>
+
+    <footer>
+      <p>&copy; 2024 Community Resource Finder. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+      const loginBtn = document.getElementById("loginBtn");
+      const signupBtn = document.getElementById("signupBtn");
+      const loginForm = document.getElementById("loginForm");
+      const signupForm = document.getElementById("signupForm");
+      const locationSection = document.getElementById("locationSection");
+      const postLoginSection = document.getElementById("postLoginSection");
+      const resourceList = document.getElementById("resourceList");
+
+      loginBtn.addEventListener("click", function () {
+        loginForm.classList.add("active");
+        signupForm.classList.remove("active");
+      });
+
+      signupBtn.addEventListener("click", function () {
+        signupForm.classList.add("active");
+        loginForm.classList.remove("active");
+      });
+
+      document
+        .getElementById("signup")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          signupForm.classList.remove("active");
+          loginForm.classList.add("active");
+          alert("Sign up successful! Please log in.");
+        });
+
+      document.getElementById("login").addEventListener("submit", function (e) {
+        e.preventDefault();
+        loginForm.classList.remove("active");
+        locationSection.classList.add("active");
+      });
+
+      document
+        .getElementById("locationForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          locationSection.classList.remove("active");
+          postLoginSection.classList.add("active");
+        });
+
+      document.querySelectorAll(".functionality-item").forEach((item) => {
+        item.addEventListener("click", function () {
+          const service = this.dataset.service;
+          const services = {
+            Food: [
+              {
+                name: "Sodexo",
+                location: "Opposite to Auditorium",
+                contact: "123-456-7890",
+                rating: 4.5,
+                timings: "10 AM - 07 PM",
+                comments: [],
+                image: "sodexo.jpg",
+              },
+              {
+                name: "Nalabagam",
+                location: "Beside to Auditorium",
+                contact: "987-654-3210",
+                rating: 4.7,
+                timings: "11 AM - 07 PM",
+                comments: [],
+                image: "nalabakam.jpg",
+              },
+              {
+                name: "AASIFE",
+                location: "Opposite to Auditorium",
+                contact: "987-654-3210",
+                rating: 4.7,
+                timings: "11 AM - 05 PM",
+                comments: [],
+                image: "aasife.jpg",
+              },
+              {
+                name: "Anandham Juice shop",
+                location: "Opposite to COE Office",
+                contact: "987-654-3210",
+                rating: 4.7,
+                timings: "11 AM - 07 PM",
+                comments: [],
+                image: "juiceshop.jpg",
+              },
+            ],
+            "Medical Shops": [
+              {
+                name: "Kalasalingam Pharmacy",
+                location: "College Hospital",
+                contact: "234-567-8901",
+                rating: 4.3,
+                timings: "9 AM - 9 PM",
+                comments: [],
+                image: "/placeholder.svg?height=150&width=150",
+              },
+            ],
+            "Petrol Bunk": [
+              {
+                name: "Petrol Station ",
+                location: "Near College Gate Entry",
+                contact: "345-678-9012",
+                rating: 4.2,
+                timings: "24 Hours",
+                comments: [],
+                image: "/placeholder.svg?height=150&width=150",
+              },
+            ],
+            "Xerox Shop": [
+              {
+                name: "Anandham Xerox",
+                location: "Opposite to COE",
+                contact: "456-789-0123",
+                rating: 4.4,
+                timings: "9 AM - 6 PM",
+                comments: [],
+                image: "xerox.jpg",
+              },
+              {
+                name: "Priya Xerox",
+                location: "Opposite to 7th  Block",
+                contact: "765-432-1980",
+                rating: 4.3,
+
+                timings: "10 AM - 7 PM",
+                comments: [],
+                image: "xerox.jpg",
+              },
+            ],
+            Travels: [
+              {
+                name: "City Bus Services",
+                location: "Outside Of the Services",
+                contact: "567-890-1234",
+                rating: 4.5,
+                timings: "24 Hours",
+                comments: [],
+                image: "/placeholder.svg?height=150&width=150",
+              },
+              {
+                name: "Madurai Travels",
+                location: "Krishnan Koil",
+                contact: "654-321-9870",
+                rating: 4.6,
+                timings: "24 Hours",
+                comments: [],
+                image: "/placeholder.svg?height=150&width=150",
+              },
+            ],
+          };
+
+          const resources = services[service] || [];
+          resourceList.innerHTML = resources
+            .map(
+              (resource) => `
+                        <div class="resource">
+                            <img src="${resource.image}" alt="${
+                resource.name
+              }" class="resource-image">
+                            <div class="resource-details">
+                                <h3>${resource.name}</h3>
+                                <p><strong>Location:</strong> ${
+                                  resource.location
+                                }</p>
+                                <p><strong>Contact:</strong> ${
+                                  resource.contact
+                                }</p>
+                                <p><strong>Timings:</strong> ${
+                                  resource.timings
+                                }</p>
+                                <div class="star-rating">
+                                    ${generateStarRating(resource.rating)}
+                                </div>
+                                <div class="comment-section">
+                                    <input type="text" placeholder="Leave a comment" />
+                                    <button class="btn btn-info btn-sm">Submit</button>
+                                </div>
+                                <div class="comments-list">
+                                    ${resource.comments
+                                      .map((comment) => `<p>${comment}</p>`)
+                                      .join("")}
+                                </div>
+                            </div>
+                        </div>
+                    `
+            )
+            .join("");
+          resourceList.style.display = resources.length ? "block" : "none";
+
+          // Comment submission
+          resourceList
+            .querySelectorAll(".comment-section")
+            .forEach((section, index) => {
+              const submitButton = section.querySelector("button");
+              const inputField = section.querySelector("input");
+
+              submitButton.addEventListener("click", () => {
+                const comment = inputField.value.trim();
+                if (comment) {
+                  resources[index].comments.push(comment);
+                  inputField.value = "";
+                  updateComments(index);
+                }
+              });
+            });
+        });
+      });
+
+      function generateStarRating(rating) {
+        const fullStars = Math.floor(rating);
+        const halfStar = rating % 1 >= 0.5;
+        const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+        return `
+                ${'<i class="fas fa-star"></i>'.repeat(fullStars)}
+                ${halfStar ? '<i class="fas fa-star-half-alt"></i>' : ""}
+                ${'<i class="far fa-star"></i>'.repeat(emptyStars)}
+                <span>(${rating.toFixed(1)})</span>
+            `;
+      }
+
+      function updateComments(resourceIndex) {
+        const commentsList =
+          document.querySelectorAll(".comments-list")[resourceIndex];
+        const resource = services[currentService][resourceIndex];
+        commentsList.innerHTML = resource.comments
+          .map((comment) => `<p>${comment}</p>`)
+          .join("");
+      }
+    </script>
+  </body>
+</html>
